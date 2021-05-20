@@ -74,7 +74,7 @@ func (s *signer) renewer() {
 
 func (s *signer) signSSH(r *pb.UserCredentialRequest, u *pb.VerifiedUser, res *pb.CredentialResponse) (string, error) {
 	kd := map[string]interface{}{
-		"public_key":       r.SSHCertificateRequest.PublicKey,
+		"public_key":       r.SshCertificateRequest.PublicKey,
 		"valid_principals": u.Username,
 		"key_id":           u.Username,
 		"ttl":              *vaultTTL,
@@ -84,7 +84,7 @@ func (s *signer) signSSH(r *pb.UserCredentialRequest, u *pb.VerifiedUser, res *p
 		log.Printf("failed to sign SSH key: %v", err)
 		return "", fmt.Errorf("failed to sign SSH key")
 	}
-	res.SSHCertificate = &pb.SSHCertificate{
+	res.SshCertificate = &pb.SshCertificate{
 		Certificate: sk.Data["signed_key"].(string),
 	}
 	return "SSH certificate", nil

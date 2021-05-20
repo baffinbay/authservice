@@ -15,11 +15,21 @@ from port
 <code>{{.}}</code><br>
 {{ end }}
 </td></tr>
-<tr><td>SSH Public Key:</td><td>{{ if .Request.SshCertificateRequest }}<code>{{ .Request.SshCertificateRequest.PublicKey }}</code>{{ else }}do not sign key{{ end }}</td></tr>
-<tr><td>Vault:</td><td>{{ if .Request.VaultTokenRequest }}create token{{ else }}do not renew{{ end }}</td></tr>
-<tr><td>Kubernetes:</td><td>{{ if .Request.KubernetesCertificateRequest }}create certificate{{ else }}do not renew certificate{{ end }}</td></tr>
-<tr><td>VMware:</td><td>{{ if .Request.VmwareCertificateRequest }}create certificate{{ else }}do not renew certificate{{ end }}</td></tr>
-<tr><td>Browser:</td><td>{{ if .Request.BrowserCertificateRequest }}create certificate{{ else }}do not renew certificate{{ end }}</td></tr>
+{{ if .Request.SshCertificateRequest }}
+<tr><td>SSH Public Key:</td><td><code>{{ .Request.SshCertificateRequest.PublicKey }}</code></td></tr>
+{{ end }}
+{{ if .Request.VaultTokenRequest }}
+<tr><td>Vault:</td><td>create token</td></tr>
+{{ end }}
+{{ if .Request.KubernetesCertificateRequest }}
+<tr><td>Kubernetes:</td><td>create certificate</td></tr>
+{{ end }}
+{{ if .Request.VmwareCertificateRequest }}
+<tr><td>VMware:</td><td>create certificate</td></tr>
+{{ end }}
+{{ if .Request.BrowserCertificateRequest }}
+<tr><td>Browser:</td><td>create certificate</td></tr>
+{{ end }}
 </table>
 
 <br>

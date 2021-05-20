@@ -24,7 +24,7 @@ func (s *signer) Sign(r *pb.UserCredentialRequest, u *pb.VerifiedUser) (*pb.Cred
 	// TODO(bluecmd): Refactor this
 	artifacts := make([]string, 0)
 	if r.SshCertificateRequest != nil {
-		a, err := s.signSsh(r, u, res)
+		a, err := s.signSSH(r, u, res)
 		if err != nil {
 			return nil, err
 		}
