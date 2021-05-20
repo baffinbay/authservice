@@ -4,6 +4,7 @@
   "allowed_users": "*",
   "ttl": "20h",
   "key_type": "ca",
+  "algorithm_signer": "rsa-sha2-512",
   "default_extensions": [
     {
       "permit-pty": "",
