@@ -13,8 +13,8 @@ type Auditor interface {
 }
 
 type signer struct {
-	a Auditor
-	v *vault.Client
+	a    Auditor
+	v    *vault.Client
 	gmap map[string]string
 }
 

@@ -54,7 +54,7 @@ func (s *webuiServer) processLogin(sess *loginSession, w http.ResponseWriter, r 
 }
 
 func (s *webuiServer) renderLogin(sess *loginSession, w http.ResponseWriter, r *http.Request) {
-  w.Header().Add("content-type", "text/html;charset=utf-8")
+	w.Header().Add("content-type", "text/html;charset=utf-8")
 	log.Printf("Rendering login")
 	err := s.loginTmpl.Execute(w, sess)
 	if err != nil {
@@ -143,9 +143,9 @@ func (s *webuiServer) withSession(rh func(*loginSession, http.ResponseWriter, *h
 			}
 
 			c := &http.Cookie{
-				Name: "Auth-Session-Secret",
-				Value: secret,
-				Path: "/",
+				Name:   "Auth-Session-Secret",
+				Value:  secret,
+				Path:   "/",
 				Secure: *secureCookie,
 			}
 			http.SetCookie(w, c)

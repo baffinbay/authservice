@@ -6,8 +6,8 @@ import (
 	"log"
 	"time"
 
-	"github.com/elastx/authservice/auth"
 	pb "github.com/dhtech/proto/auth"
+	"github.com/elastx/authservice/auth"
 )
 
 var (
@@ -51,8 +51,8 @@ type Signer interface {
 
 type verifier struct {
 	sessionServer SessionServer
-	authBackend AuthBackend
-	signer Signer
+	authBackend   AuthBackend
+	signer        Signer
 }
 
 func waitForAttempt(atq chan auth.Attempt) (auth.Attempt, error) {
@@ -90,7 +90,7 @@ func (v *verifier) VerifyAndSign(r *pb.UserCredentialRequest, aq chan *pb.UserAc
 	// Start the username/password challenge to figure out who the user is.
 	var c *pb.UserAction
 	ct := v.authBackend.Challenge()
-	switch (ct) {
+	switch ct {
 	case auth.ChallengeUsernamePassword:
 		c = s.ChallengeLogin()
 	case auth.ChallengeJWT:
@@ -170,8 +170,8 @@ func (v *verifier) VerifyAndSign(r *pb.UserCredentialRequest, aq chan *pb.UserAc
 func New(sessionServer SessionServer, signer Signer, authBackend AuthBackend) *verifier {
 	v := verifier{
 		sessionServer: sessionServer,
-		signer: signer,
-		authBackend: authBackend,
+		signer:        signer,
+		authBackend:   authBackend,
 	}
 	return &v
 }

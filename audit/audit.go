@@ -13,12 +13,11 @@ var (
 )
 
 type auditor struct {
-
 }
 
 func (a *auditor) Log(msg string) {
 	log.Printf("Audit: %s", msg)
-	if (*auditHost != "") {
+	if *auditHost != "" {
 		c, err := net.Dial(*auditProtocol, *auditHost)
 		if err != nil {
 			log.Printf("failed to dial audit receiver: %v", err)

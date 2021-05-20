@@ -18,14 +18,14 @@ import (
 )
 
 var (
-	vaultSshMount     = flag.String("vault_ssh_mount", "ssh", "Mount point for the SSH signer in Vault")
-	vaultTtl          = flag.String("vault_ttl", "20h", "Validity duration of short signed artifacts from Vault")
-	vaultLongTtl      = flag.String("vault_long_ttl", "2160h", "Validity duration of long signed artifacts from Vault")
+	vaultSSHMount     = flag.String("vault_ssh_mount", "ssh", "Mount point for the SSH signer in Vault")
+	vaultTTL          = flag.String("vault_ttl", "20h", "Validity duration of short signed artifacts from Vault")
+	vaultLongTTL      = flag.String("vault_long_ttl", "2160h", "Validity duration of long signed artifacts from Vault")
 	vaultRenew        = flag.String("vault_renew", "24h", "How often to renew the token")
 	vaultGroupMap     = flag.String("vault_group_map", "{}", "JSON group map from LDAP group DN to policy")
 	vaultVmwareDomain = flag.String("vault_vmware_domain", "tech.dreamhack.se", "VMware uses AD UPNs in the format of ${user}@{$domain}, this is the domain part")
 	// This is needed because Vault includes full CA chain *except* the root CA
-	vaultRootCa       = flag.String("vault_include_root_ca", "ca-pki/cert/ca", "Include this certificate in the CA chain")
+	vaultRootCA = flag.String("vault_include_root_ca", "ca-pki/cert/ca", "Include this certificate in the CA chain")
 )
 
 func toStringArray(elems interface{}) []string {
@@ -36,11 +36,11 @@ func toStringArray(elems interface{}) []string {
 	return res
 }
 
-func (s *signer) appendRootCa(chain []string) []string {
-	if *vaultRootCa == "" {
+func (s *signer) appendRootCA(chain []string) []string {
+	if *vaultRootCA == "" {
 		return chain
 	}
-	r, err := s.v.Logical().Read(*vaultRootCa)
+	r, err := s.v.Logical().Read(*vaultRootCA)
 	if err != nil {
 		log.Fatalf("Unable to read root CA to include: %v", err)
 	}
@@ -72,19 +72,19 @@ func (s *signer) renewer() {
 	}
 }
 
-func (s *signer) signSsh(r *pb.UserCredentialRequest, u *pb.VerifiedUser, res *pb.CredentialResponse) (string, error) {
+func (s *signer) signSSH(r *pb.UserCredentialRequest, u *pb.VerifiedUser, res *pb.CredentialResponse) (string, error) {
 	kd := map[string]interface{}{
-		"public_key": r.SshCertificateRequest.PublicKey,
+		"public_key":       r.SSHCertificateRequest.PublicKey,
 		"valid_principals": u.Username,
-		"key_id": u.Username,
-		"ttl": *vaultTtl,
+		"key_id":           u.Username,
+		"ttl":              *vaultTTL,
 	}
-	sk, err := s.v.SSHWithMountPoint(*vaultSshMount).SignKey("user", kd)
+	sk, err := s.v.SSHWithMountPoint(*vaultSSHMount).SignKey("user", kd)
 	if err != nil {
 		log.Printf("failed to sign SSH key: %v", err)
 		return "", fmt.Errorf("failed to sign SSH key")
 	}
-	res.SshCertificate = &pb.SshCertificate{
+	res.SSHCertificate = &pb.SSHCertificate{
 		Certificate: sk.Data["signed_key"].(string),
 	}
 	return "SSH certificate", nil
@@ -103,7 +103,7 @@ func (s *signer) signVault(r *pb.UserCredentialRequest, u *pb.VerifiedUser, res 
 
 	tcr := &vault.TokenCreateRequest{
 		Metadata: map[string]string{"username": u.Username},
-		TTL: *vaultTtl,
+		TTL:      *vaultTTL,
 		Policies: policies,
 	}
 	sk, err := s.v.Auth().Token().CreateWithRole(tcr, "user")
@@ -119,8 +119,8 @@ func (s *signer) signVault(r *pb.UserCredentialRequest, u *pb.VerifiedUser, res 
 
 func (s *signer) signBrowser(r *pb.UserCredentialRequest, u *pb.VerifiedUser, res *pb.CredentialResponse) (string, error) {
 	data := map[string]interface{}{
-		"csr": string(r.BrowserCertificateRequest.Csr),
-		"ttl": *vaultLongTtl,
+		"csr":         string(r.BrowserCertificateRequest.Csr),
+		"ttl":         *vaultLongTTL,
 		"common_name": u.Username,
 	}
 	sk, err := s.v.Logical().Write("browser-pki/sign/user", data)
@@ -129,19 +129,19 @@ func (s *signer) signBrowser(r *pb.UserCredentialRequest, u *pb.VerifiedUser, re
 		return "", fmt.Errorf("failed to sign browser certificate")
 	}
 	res.BrowserCertificate = &pb.BrowserCertificate{
-		CaChain: toStringArray(sk.Data["ca_chain"]),
+		CaChain:     toStringArray(sk.Data["ca_chain"]),
 		Certificate: sk.Data["certificate"].(string),
 	}
-	res.BrowserCertificate.CaChain = s.appendRootCa(res.BrowserCertificate.CaChain)
+	res.BrowserCertificate.CaChain = s.appendRootCA(res.BrowserCertificate.CaChain)
 	return "Browser certificate", nil
 }
 
 func (s *signer) signVmware(r *pb.UserCredentialRequest, u *pb.VerifiedUser, res *pb.CredentialResponse) (string, error) {
 	data := map[string]interface{}{
-		"csr": string(r.VmwareCertificateRequest.Csr),
-		"ttl": *vaultTtl,
+		"csr":         string(r.VmwareCertificateRequest.Csr),
+		"ttl":         *vaultTTL,
 		"common_name": u.Username,
-		"other_sans": fmt.Sprintf("1.3.6.1.4.1.1;UTF8:%s@%s", u.Username, *vaultVmwareDomain),
+		"other_sans":  fmt.Sprintf("1.3.6.1.4.1.1;UTF8:%s@%s", u.Username, *vaultVmwareDomain),
 	}
 	sk, err := s.v.Logical().Write("vmware-pki/sign/user", data)
 	if err != nil {
@@ -149,10 +149,10 @@ func (s *signer) signVmware(r *pb.UserCredentialRequest, u *pb.VerifiedUser, res
 		return "", fmt.Errorf("failed to sign VMware certificate")
 	}
 	res.VmwareCertificate = &pb.VmwareCertificate{
-		CaChain: toStringArray(sk.Data["ca_chain"]),
+		CaChain:     toStringArray(sk.Data["ca_chain"]),
 		Certificate: sk.Data["certificate"].(string),
 	}
-	res.VmwareCertificate.CaChain = s.appendRootCa(res.VmwareCertificate.CaChain)
+	res.VmwareCertificate.CaChain = s.appendRootCA(res.VmwareCertificate.CaChain)
 	return "VMware certificate", nil
 }
 
@@ -172,19 +172,19 @@ func (s *signer) signKubernetes(r *pb.UserCredentialRequest, u *pb.VerifiedUser,
 	res.KubernetesCertificate.PrivateKey = string(keyPemBlob)
 
 	subj := pkix.Name{
-		CommonName: u.Username,
-		Organization: u.Group,
+		CommonName:         u.Username,
+		Organization:       u.Group,
 		OrganizationalUnit: []string{"Kubernetes"},
 	}
 	tmpl := x509.CertificateRequest{
-		Subject: subj,
+		Subject:            subj,
 		SignatureAlgorithm: x509.ECDSAWithSHA256,
 	}
 	csrb, _ := x509.CreateCertificateRequest(rand.Reader, &tmpl, keyb)
 	pemBlob := pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE REQUEST", Bytes: csrb})
 	data := map[string]interface{}{
 		"csr": string(pemBlob),
-		"ttl": *vaultTtl,
+		"ttl": *vaultTTL,
 	}
 	sk, err := s.v.Logical().Write("k8s-pki/sign-verbatim/user", data)
 	if err != nil {
@@ -193,11 +193,11 @@ func (s *signer) signKubernetes(r *pb.UserCredentialRequest, u *pb.VerifiedUser,
 	}
 	res.KubernetesCertificate.CaChain = toStringArray(sk.Data["ca_chain"])
 	res.KubernetesCertificate.Certificate = sk.Data["certificate"].(string)
-	res.KubernetesCertificate.CaChain = s.appendRootCa(res.KubernetesCertificate.CaChain)
+	res.KubernetesCertificate.CaChain = s.appendRootCA(res.KubernetesCertificate.CaChain)
 	return "Kubernetes certificate", nil
 }
 
-func (s *signer)initVault() {
+func (s *signer) initVault() {
 	v, err := vault.NewClient(nil)
 	if err != nil {
 		log.Fatalf("could not create Vault client: %v", err)

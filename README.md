@@ -4,6 +4,13 @@
 
  1. Install Vault server from https://www.vaultproject.io/.
  1. Run `/usr/bin/vault server -dev` and keep it open while developing.
+ 1. Enable SSH certificate engine:
+
+    ```
+    VAULT_ADDR=http://127.0.0.1:8200 vault secrets enable -path=ssh ssh
+    VAULT_ADDR=http://127.0.0.1:8200 vault write ssh/roles/user - < ssh.policy
+    ```
+
  1. Generate a renewable token to use:
 
     ```

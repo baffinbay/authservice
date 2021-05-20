@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"log"
 
+	pb "github.com/dhtech/proto/auth"
 	"github.com/elastx/authservice/auth"
 	"github.com/elastx/authservice/verify"
-	pb "github.com/dhtech/proto/auth"
 	"github.com/google/uuid"
 )
 
@@ -23,15 +23,15 @@ type loginSession struct {
 	// browser. Attempting to set this twice will fail.
 	cookie string
 
-	id string
-	Request *pb.UserCredentialRequest
-	NextUrl string
-	Page string
+	id           string
+	Request      *pb.UserCredentialRequest
+	NextUrl      string
+	Page         string
 	VerifiedUser *pb.VerifiedUser
 }
 
 type attempt struct {
-	username string
+	username   string
 	credential string
 }
 
@@ -49,11 +49,11 @@ func (s *webuiServer) NewSession(r *pb.UserCredentialRequest, atq chan auth.Atte
 	sess := &loginSession{
 		Request: r,
 		NextUrl: fmt.Sprintf("/next?session=%s", id),
-		id: id,
-		eq: eq,
-		atq: atq,
-		rq: rq,
-		p: s,
+		id:      id,
+		eq:      eq,
+		atq:     atq,
+		rq:      rq,
+		p:       s,
 	}
 	s.sessionLock.Lock()
 	s.sessions[id] = sess
@@ -120,7 +120,7 @@ func (s *loginSession) NextStep() string {
 }
 
 func (s *loginSession) Cookie() (string, error) {
-	if (s.cookie != "") {
+	if s.cookie != "" {
 		return "", fmt.Errorf("cookie already set")
 	}
 	s.cookie = uuid.New().String()

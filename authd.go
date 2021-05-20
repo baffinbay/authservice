@@ -5,18 +5,18 @@ import (
 	"log"
 	"net"
 
-	"github.com/soheilhy/cmux"
 	"github.com/elastx/authservice/audit"
 	"github.com/elastx/authservice/auth"
 	"github.com/elastx/authservice/rpc"
 	"github.com/elastx/authservice/sign"
 	"github.com/elastx/authservice/verify"
 	"github.com/elastx/authservice/webui"
+	"github.com/soheilhy/cmux"
 )
 
 var (
 	listenAddress = flag.String("listen", ":1214", "Address to listen to")
-	login = flag.String("login", "ldap", "Login method to use")
+	login         = flag.String("login", "ldap", "Login method to use")
 )
 
 func main() {

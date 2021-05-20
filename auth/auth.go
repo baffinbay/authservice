@@ -11,5 +11,5 @@ type ChallengeType int
 
 const (
 	ChallengeUsernamePassword ChallengeType = 1
-	ChallengeJWT ChallengeType = 2
+	ChallengeJWT              ChallengeType = 2
 )

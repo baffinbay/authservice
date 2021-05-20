@@ -1,0 +1,17 @@
+{
+  "allow_user_certificates": true,
+  "allow_user_key_ids": true,
+  "allowed_users": "*",
+  "ttl": "20h",
+  "key_type": "ca",
+  "default_extensions": [
+    {
+      "permit-pty": "",
+      "permit-X11-forwarding": "",
+      "permit-agent-forwarding": "",
+      "permit-port-forwarding": "",
+      "permit-pty": "",
+      "permit-user-rc": ""
+    }
+  ]
+}
