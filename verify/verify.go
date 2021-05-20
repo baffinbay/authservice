@@ -6,7 +6,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/dhtech/authservice/auth"
+	"github.com/elastx/authservice/auth"
 	pb "github.com/dhtech/proto/auth"
 )
 
@@ -42,7 +42,7 @@ type Signer interface {
 
 type verifier struct {
 	sessionServer SessionServer
-	ldap AuthBackend
+	authBackend AuthBackend
 	signer Signer
 }
 
@@ -89,12 +89,12 @@ func (v *verifier) VerifyAndSign(r *pb.UserCredentialRequest, aq chan *pb.UserAc
 		if err != nil {
 			return nil, err
 		}
-		groups, err = v.ldap.Verify(a)
+		groups, err = v.authBackend.Verify(a)
 		if err == nil {
 			eq <- nil
 			break
 		}
-		eq <- fmt.Errorf("LDAP authentication failed")
+		eq <- fmt.Errorf("Authentication failed")
 	}
 
 	// Now we know the username, use it to look up what groups and what
@@ -144,11 +144,11 @@ func (v *verifier) VerifyAndSign(r *pb.UserCredentialRequest, aq chan *pb.UserAc
 	return res, nil
 }
 
-func New(sessionServer SessionServer, signer Signer) *verifier {
+func New(sessionServer SessionServer, signer Signer, authBackend AuthBackend) *verifier {
 	v := verifier{
 		sessionServer: sessionServer,
 		signer: signer,
-		ldap: auth.NewLdap(),
+		authBackend: authBackend,
 	}
 	return &v
 }

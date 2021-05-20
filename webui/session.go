@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/dhtech/authservice/auth"
-	"github.com/dhtech/authservice/verify"
+	"github.com/elastx/authservice/auth"
+	"github.com/elastx/authservice/verify"
 	pb "github.com/dhtech/proto/auth"
 	"github.com/google/uuid"
 )

@@ -21,7 +21,7 @@ type ldapAuth struct {
 }
 
 func (l *ldapAuth) Verify(a Attempt) ([]string, error) {
-	c := newLdapConnection()
+	c := newLDAPConnection()
 	if c == nil {
 		return []string{}, fmt.Errorf("LDAP unavailable")
 	}
@@ -62,7 +62,7 @@ func (l *ldapAuth) resolve(dn string, c *ldap.Conn) ([]string, error) {
 	return groups, nil
 }
 
-func newLdapConnection() *ldap.Conn {
+func newLDAPConnection() *ldap.Conn {
 	var conn *ldap.Conn
 	var err error
 
@@ -82,7 +82,7 @@ func newLdapConnection() *ldap.Conn {
 	return conn
 }
 
-func NewLdap() *ldapAuth {
+func NewLDAP() *ldapAuth {
 	l := &ldapAuth{}
 	return l
 }

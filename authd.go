@@ -6,11 +6,12 @@ import (
 	"net"
 
 	"github.com/cockroachdb/cmux"
-	"github.com/dhtech/authservice/audit"
-	"github.com/dhtech/authservice/rpc"
-	"github.com/dhtech/authservice/sign"
-	"github.com/dhtech/authservice/verify"
-	"github.com/dhtech/authservice/webui"
+	"github.com/elastx/authservice/audit"
+	"github.com/elastx/authservice/auth"
+	"github.com/elastx/authservice/rpc"
+	"github.com/elastx/authservice/sign"
+	"github.com/elastx/authservice/verify"
+	"github.com/elastx/authservice/webui"
 )
 
 var (
@@ -32,7 +33,8 @@ func main() {
 	a := audit.New()
 	si := sign.New(a)
 	w := webui.New()
-	v := verify.New(w, si)
+	ldap := auth.NewLDAP()
+	v := verify.New(w, si, ldap)
 	r := rpc.New(v)
 
 	go r.Serve(sg)
