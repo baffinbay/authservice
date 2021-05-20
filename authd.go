@@ -5,7 +5,7 @@ import (
 	"log"
 	"net"
 
-	"github.com/cockroachdb/cmux"
+	"github.com/soheilhy/cmux"
 	"github.com/elastx/authservice/audit"
 	"github.com/elastx/authservice/auth"
 	"github.com/elastx/authservice/rpc"
@@ -16,6 +16,7 @@ import (
 
 var (
 	listenAddress = flag.String("listen", ":1214", "Address to listen to")
+	login = flag.String("login", "ldap", "Login method to use")
 )
 
 func main() {
@@ -27,14 +28,21 @@ func main() {
 	}
 
 	mux := cmux.New(s)
-	sg := mux.Match(cmux.HTTP2HeaderField("content-type", "application/grpc"))
+	sg := mux.MatchWithWriters(cmux.HTTP2MatchHeaderFieldSendSettings("content-type", "application/grpc"))
 	sh := mux.Match(cmux.Any())
 
 	a := audit.New()
 	si := sign.New(a)
 	w := webui.New()
-	ldap := auth.NewLDAP()
-	v := verify.New(w, si, ldap)
+	var ab verify.AuthBackend
+	if *login == "ldap" {
+		ab = auth.NewLDAP()
+	} else if *login == "jwt" {
+		ab = auth.NewJWT()
+	} else if *login == "fake" {
+		ab = auth.NewFake()
+	}
+	v := verify.New(w, si, ab)
 	r := rpc.New(v)
 
 	go r.Serve(sg)

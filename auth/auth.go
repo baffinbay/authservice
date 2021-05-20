@@ -6,3 +6,10 @@ type Attempt interface {
 	// Used for password/OTP/U2F
 	Credential() string
 }
+
+type ChallengeType int
+
+const (
+	ChallengeUsernamePassword ChallengeType = 1
+	ChallengeJWT ChallengeType = 2
+)

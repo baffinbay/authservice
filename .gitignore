@@ -1,3 +1,4 @@
 .*.swp
 .*.swo
 authservice
+vault.token

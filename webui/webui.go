@@ -18,6 +18,7 @@ type webuiServer struct {
 	completeTmpl *template.Template
 	loginTmpl    *template.Template
 	reviewTmpl   *template.Template
+	errorTmpl    *template.Template
 	sessionLock  *sync.Mutex
 	sessions     map[string]*loginSession
 }
@@ -54,10 +55,16 @@ func (s *webuiServer) processLogin(sess *loginSession, w http.ResponseWriter, r 
 
 func (s *webuiServer) renderLogin(sess *loginSession, w http.ResponseWriter, r *http.Request) {
   w.Header().Add("content-type", "text/html;charset=utf-8")
+	log.Printf("Rendering login")
 	err := s.loginTmpl.Execute(w, sess)
 	if err != nil {
 		log.Printf("error when rendering login template: %v", err)
 	}
+}
+
+func (s *webuiServer) handleJWT(sess *loginSession, w http.ResponseWriter, r *http.Request) {
+	w.Header().Add("content-type", "text/plain")
+	w.Write([]byte("Baloooba"))
 }
 
 func (s *webuiServer) handleNext(sess *loginSession, w http.ResponseWriter, r *http.Request) {
@@ -100,6 +107,14 @@ func (s *webuiServer) handleComplete(sess *loginSession, w http.ResponseWriter, 
 	sess.ProcessComplete()
 }
 
+func (s *webuiServer) handleError(w http.ResponseWriter, r *http.Request) {
+	w.Header().Add("content-type", "text/html;charset=utf-8")
+	err := s.errorTmpl.Execute(w, nil)
+	if err != nil {
+		log.Printf("error when rendering error template: %v", err)
+	}
+}
+
 func (s *webuiServer) withSession(rh func(*loginSession, http.ResponseWriter, *http.Request)) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		sid, ok := r.URL.Query()["session"]
@@ -140,11 +155,17 @@ func (s *webuiServer) withSession(rh func(*loginSession, http.ResponseWriter, *h
 }
 
 func (s *webuiServer) Serve(l net.Listener) {
-	http.HandleFunc("/login", s.withSession(s.handleLogin))
-	http.HandleFunc("/next", s.withSession(s.handleNext))
-	http.HandleFunc("/review", s.withSession(s.handleReview))
-	http.HandleFunc("/complete", s.withSession(s.handleComplete))
-	http.Serve(l, nil)
+	m := http.NewServeMux()
+	m.HandleFunc("/login", s.withSession(s.handleLogin))
+	m.HandleFunc("/jwt", s.withSession(s.handleJWT))
+	m.HandleFunc("/next", s.withSession(s.handleNext))
+	m.HandleFunc("/review", s.withSession(s.handleReview))
+	m.HandleFunc("/complete", s.withSession(s.handleComplete))
+	m.HandleFunc("/error", s.handleError)
+	http.Serve(l, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		log.Printf("HTTP: %s %s", r.Method, r.URL)
+		m.ServeHTTP(w, r)
+	}))
 }
 
 func New() *webuiServer {
@@ -152,6 +173,7 @@ func New() *webuiServer {
 	s.completeTmpl = template.Must(template.ParseFiles("tmpl/site.tmpl", "tmpl/no-validate.tmpl", "tmpl/complete.tmpl"))
 	s.loginTmpl = template.Must(template.ParseFiles("tmpl/site.tmpl", "tmpl/validate.tmpl", "tmpl/login.tmpl"))
 	s.reviewTmpl = template.Must(template.ParseFiles("tmpl/site.tmpl", "tmpl/validate.tmpl", "tmpl/review.tmpl"))
+	s.errorTmpl = template.Must(template.ParseFiles("tmpl/site.tmpl", "tmpl/no-validate.tmpl", "tmpl/error.tmpl"))
 	s.sessions = make(map[string]*loginSession)
 	s.sessionLock = &sync.Mutex{}
 	return s

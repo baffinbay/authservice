@@ -5,19 +5,23 @@ import (
 	"flag"
 	"fmt"
 	"log"
-	
+
 	ldap "gopkg.in/ldap.v2"
 )
 
 var (
 	ldapServer     = flag.String("ldap_server", "ldap.change.the.flag:0", "What LDAP server and port to use")
-	ldapTls        = flag.Bool("ldap_tls", true, "Whether or not to use TLS to connect to LDAP")
+	ldapTLS        = flag.Bool("ldap_tls", true, "Whether or not to use TLS to connect to LDAP")
 	ldapBind       = flag.String("ldap_bind", "uid=%s,dc=dummy", "DN format to use when binding with a login attempt")
 	ldapServerName = flag.String("ldap_server_name", "", "Override LDAP server name used for TLS verification")
 	ldapBase       = flag.String("ldap_base", "dc=dummy", "What LDAP base to use for the group search")
 )
 
 type ldapAuth struct {
+}
+
+func (l *ldapAuth) Challenge() ChallengeType {
+	return ChallengeUsernamePassword
 }
 
 func (l *ldapAuth) Verify(a Attempt) ([]string, error) {
@@ -66,7 +70,7 @@ func newLDAPConnection() *ldap.Conn {
 	var conn *ldap.Conn
 	var err error
 
-	if *ldapTls {
+	if *ldapTLS {
 		tc := &tls.Config{}
 		if *ldapServerName != "" {
 			tc.ServerName = *ldapServerName

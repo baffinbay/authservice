@@ -18,14 +18,22 @@ type Session interface {
 	// A request for username/password
 	ChallengeLogin() *pb.UserAction
 
+	// A request for a signed JWT
+	ChallengeJWT() *pb.UserAction
+
 	// A request for the user to acknowledge the credentials being minted
 	ChallengeReview(*pb.VerifiedUser) *pb.UserAction
 
 	// The final screen showing something nice to the user prompting to close
-	// the window. Sets the attached cookie if set.
-	ChallengeComplete(*pb.BrowserCookie) *pb.UserAction
+	// the window.
+	ChallengeComplete() *pb.UserAction
+
+	// An error occured, show an error page.
+	ChallengeError() *pb.UserAction
 
 	Destroy()
+
+	Close()
 }
 
 type SessionServer interface {
@@ -33,6 +41,7 @@ type SessionServer interface {
 }
 
 type AuthBackend interface {
+	Challenge() auth.ChallengeType
 	Verify(auth.Attempt) ([]string, error)
 }
 
@@ -73,10 +82,23 @@ func (v *verifier) VerifyAndSign(r *pb.UserCredentialRequest, aq chan *pb.UserAc
 	defer close(atq)
 	defer close(eq)
 	s := v.sessionServer.NewSession(r, atq, eq)
-	defer s.Destroy()
+	defer func() {
+		time.Sleep(1 * time.Second)
+		s.Destroy()
+	}()
 
 	// Start the username/password challenge to figure out who the user is.
-	c := s.ChallengeLogin()
+	var c *pb.UserAction
+	ct := v.authBackend.Challenge()
+	switch (ct) {
+	case auth.ChallengeUsernamePassword:
+		c = s.ChallengeLogin()
+	case auth.ChallengeJWT:
+		c = s.ChallengeJWT()
+	default:
+		return nil, fmt.Errorf("Unknown challenge type %d", ct)
+	}
+
 	if c != nil {
 		aq <- c
 	}
@@ -118,13 +140,14 @@ func (v *verifier) VerifyAndSign(r *pb.UserCredentialRequest, aq chan *pb.UserAc
 	log.Printf("Done verifying %v, proceeding to signing", user.Username)
 	res, err := v.signer.Sign(r, user)
 	if err != nil {
+		s.ChallengeError()
 		return nil, err
 	}
 
 	// Tell the user we're finished with the challenges and set the browser
 	// cookie if it was requested and granted.
 	log.Printf("Artifacts signed for %v, moving user to success", user.Username)
-	c = s.ChallengeComplete(res.BrowserCookie)
+	c = s.ChallengeComplete()
 	if c != nil {
 		aq <- c
 	}
