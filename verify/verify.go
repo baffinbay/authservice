@@ -6,8 +6,8 @@ import (
 	"log"
 	"time"
 
-	pb "github.com/dhtech/proto/auth"
-	"github.com/elastx/authservice/auth"
+	pb "github.com/baffinbay/proto/auth"
+	"github.com/baffinbay/authservice/auth"
 )
 
 var (

@@ -13,7 +13,7 @@ import (
 	"log"
 	"time"
 
-	pb "github.com/dhtech/proto/auth"
+	pb "github.com/baffinbay/proto/auth"
 	vault "github.com/hashicorp/vault/api"
 )
 

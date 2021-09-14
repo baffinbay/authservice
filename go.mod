@@ -1,9 +1,9 @@
-module github.com/elastx/authservice
+module github.com/baffinbay/authservice
 
 go 1.16
 
 require (
-	github.com/dhtech/proto v0.0.0-20190504192043-fe1feafd906e
+	github.com/baffinbay/proto v0.0.0-20210914144723-74914933cf7f
 	github.com/golang/protobuf v1.4.3 // indirect
 	github.com/google/uuid v1.2.0
 	github.com/hashicorp/vault/api v1.1.0

@@ -4,7 +4,7 @@ import (
 	"log"
 	"net"
 
-	pb "github.com/dhtech/proto/auth"
+	pb "github.com/baffinbay/proto/auth"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/peer"
 	"google.golang.org/grpc/reflection"

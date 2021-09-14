@@ -5,12 +5,12 @@ import (
 	"log"
 	"net"
 
-	"github.com/elastx/authservice/audit"
-	"github.com/elastx/authservice/auth"
-	"github.com/elastx/authservice/rpc"
-	"github.com/elastx/authservice/sign"
-	"github.com/elastx/authservice/verify"
-	"github.com/elastx/authservice/webui"
+	"github.com/baffinbay/authservice/audit"
+	"github.com/baffinbay/authservice/auth"
+	"github.com/baffinbay/authservice/rpc"
+	"github.com/baffinbay/authservice/sign"
+	"github.com/baffinbay/authservice/verify"
+	"github.com/baffinbay/authservice/webui"
 	"github.com/soheilhy/cmux"
 )
 
