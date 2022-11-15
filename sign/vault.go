@@ -11,6 +11,7 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"strings"
 	"time"
 
 	pb "github.com/baffinbay/proto/auth"
@@ -25,7 +26,8 @@ var (
 	vaultGroupMap     = flag.String("vault_group_map", "{}", "JSON group map from LDAP group DN to policy")
 	vaultVmwareDomain = flag.String("vault_vmware_domain", "tech.dreamhack.se", "VMware uses AD UPNs in the format of ${user}@{$domain}, this is the domain part")
 	// This is needed because Vault includes full CA chain *except* the root CA
-	vaultRootCA = flag.String("vault_include_root_ca", "ca-pki/cert/ca", "Include this certificate in the CA chain")
+	vaultRootCA        = flag.String("vault_include_root_ca", "ca-pki/cert/ca", "Include this certificate in the CA chain")
+	extraSSHPrincipals = flag.String("extra_ssh_principals", "", "Comma separated list of principals added to the ssh certificate")
 )
 
 func toStringArray(elems interface{}) []string {
@@ -72,11 +74,28 @@ func (s *signer) renewer() {
 	}
 }
 
+func trimEmail(s string) string {
+	elems := strings.Split(s, "@")
+	return elems[0]
+}
+
+func getPrincipals(username string) string {
+	principals := []string{username}
+	if extraSSHPrincipals != nil && *extraSSHPrincipals != "" {
+		elems := strings.Split(*extraSSHPrincipals, ",")
+		for _, principal := range elems {
+			principals = append(principals, strings.TrimSpace(principal))
+		}
+	}
+	return strings.Join(principals, ", ")
+}
+
 func (s *signer) signSSH(r *pb.UserCredentialRequest, u *pb.VerifiedUser, res *pb.CredentialResponse) (string, error) {
+	username := trimEmail(u.Username)
 	kd := map[string]interface{}{
 		"public_key":       r.SshCertificateRequest.PublicKey,
-		"valid_principals": u.Username,
-		"key_id":           u.Username,
+		"valid_principals": getPrincipals(username),
+		"key_id":           username,
 		"ttl":              *vaultTTL,
 	}
 	sk, err := s.v.SSHWithMountPoint(*vaultSSHMount).SignKey("user", kd)

@@ -13,3 +13,8 @@ const (
 	ChallengeUsernamePassword ChallengeType = 1
 	ChallengeJWT              ChallengeType = 2
 )
+
+type Verification interface {
+	Username() string
+	Groups() []string
+}

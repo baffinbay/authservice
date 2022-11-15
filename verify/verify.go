@@ -6,8 +6,8 @@ import (
 	"log"
 	"time"
 
-	pb "github.com/baffinbay/proto/auth"
 	"github.com/baffinbay/authservice/auth"
+	pb "github.com/baffinbay/proto/auth"
 )
 
 var (
@@ -42,7 +42,7 @@ type SessionServer interface {
 
 type AuthBackend interface {
 	Challenge() auth.ChallengeType
-	Verify(auth.Attempt) ([]string, error)
+	Verify(auth.Attempt) (auth.Verification, error)
 }
 
 type Signer interface {
@@ -104,25 +104,26 @@ func (v *verifier) VerifyAndSign(r *pb.UserCredentialRequest, aq chan *pb.UserAc
 	}
 
 	var a auth.Attempt
-	var groups []string
+	var verification auth.Verification
 	for {
 		var err error
 		a, err = waitForAttempt(atq)
 		if err != nil {
 			return nil, err
 		}
-		groups, err = v.authBackend.Verify(a)
+
+		verification, err = v.authBackend.Verify(a)
 		if err == nil {
 			eq <- nil
 			break
 		}
-		eq <- fmt.Errorf("Authentication failed")
+		eq <- fmt.Errorf("authentication failed")
 	}
 
 	// Now we know the username, use it to look up what groups and what
 	// other challenge methods we should use (TODO).
-	user.Username = a.Username()
-	user.Group = append(user.Group, groups...)
+	user.Username = verification.Username()
+	user.Group = append(user.Group, verification.Groups()...)
 
 	// Present the user with all the details about what we're about to generate
 	// and let them review the data.

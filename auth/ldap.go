@@ -20,24 +20,44 @@ var (
 type ldapAuth struct {
 }
 
+type ldapVerification struct {
+	username string
+	groups   []string
+}
+
+func (v *ldapVerification) Username() string {
+	return v.username
+}
+
+func (v *ldapVerification) Groups() []string {
+	return v.groups
+}
+
 func (l *ldapAuth) Challenge() ChallengeType {
 	return ChallengeUsernamePassword
 }
 
-func (l *ldapAuth) Verify(a Attempt) ([]string, error) {
+func (l *ldapAuth) Verify(a Attempt) (Verification, error) {
 	c := newLDAPConnection()
 	if c == nil {
-		return []string{}, fmt.Errorf("LDAP unavailable")
+		return nil, fmt.Errorf("LDAP unavailable")
 	}
 
 	dn := fmt.Sprintf(*ldapBind, a.Username())
 	err := c.Bind(dn, a.Credential())
 	if err != nil {
 		log.Printf("failed to bind: %v", err)
-		return []string{}, err
+		return nil, err
 	}
 
-	return l.resolve(dn, c)
+	groups, err := l.resolve(dn, c)
+	if err != nil {
+		return nil, err
+	}
+	return &ldapVerification{
+		username: a.Username(),
+		groups:   groups,
+	}, nil
 }
 
 func (l *ldapAuth) resolve(dn string, c *ldap.Conn) ([]string, error) {
@@ -51,7 +71,7 @@ func (l *ldapAuth) resolve(dn string, c *ldap.Conn) ([]string, error) {
 	sr, err := c.Search(sreq)
 	if err != nil {
 		log.Printf("failed to execute group search: %v", err)
-		return []string{}, err
+		return nil, err
 	}
 
 	groups := make([]string, 0)
