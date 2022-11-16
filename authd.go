@@ -38,7 +38,10 @@ func main() {
 	if *login == "ldap" {
 		ab = auth.NewLDAP()
 	} else if *login == "jwt" {
-		ab = auth.NewJWT()
+		ab, err = auth.NewJWT()
+		if err != nil {
+			panic(err)
+		}
 	} else if *login == "fake" {
 		ab = auth.NewFake()
 	}

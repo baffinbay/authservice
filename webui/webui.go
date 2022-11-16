@@ -12,6 +12,7 @@ import (
 
 var (
 	secureCookie = flag.Bool("secure_cookie", true, "Whether or not to mark the session cookie for only HTTPS use")
+	jwt_header   = flag.String("jwt_header", "X-Jwt-Assertion", "Header that should contain the jwt")
 )
 
 type webuiServer struct {
@@ -64,7 +65,21 @@ func (s *webuiServer) renderLogin(sess *loginSession, w http.ResponseWriter, r *
 
 func (s *webuiServer) handleJWT(sess *loginSession, w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("content-type", "text/plain")
-	w.Write([]byte("Baloooba"))
+
+	tokens := r.Header[*jwt_header]
+	if len(tokens) != 1 {
+		http.Error(w, "auth failed, no jwt", http.StatusUnauthorized)
+		log.Printf("auth failed, no jwt")
+		return
+	}
+
+	err := sess.ProcessJWT(tokens[0])
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusUnauthorized)
+		return
+	}
+
+	s.renderReview(sess, w, r)
 }
 
 func (s *webuiServer) handleNext(sess *loginSession, w http.ResponseWriter, r *http.Request) {

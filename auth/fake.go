@@ -4,6 +4,19 @@ import (
 	"fmt"
 )
 
+type fakeVerification struct {
+	username string
+	groups   []string
+}
+
+func (v *fakeVerification) Username() string {
+	return v.username
+}
+
+func (v *fakeVerification) Groups() []string {
+	return v.groups
+}
+
 type fakeAuth struct {
 }
 
@@ -11,11 +24,14 @@ func (l *fakeAuth) Challenge() ChallengeType {
 	return ChallengeUsernamePassword
 }
 
-func (l *fakeAuth) Verify(a Attempt) ([]string, error) {
+func (l *fakeAuth) Verify(a Attempt) (Verification, error) {
 	if a.Username() == "bad" {
 		return nil, fmt.Errorf("User is banned")
 	}
-	return []string{"fake-group", a.Username() + "-group"}, nil
+	return &fakeVerification{
+		username: a.Username(),
+		groups:   []string{"fake-group", a.Username() + "-group"},
+	}, nil
 }
 
 func NewFake() *fakeAuth {
