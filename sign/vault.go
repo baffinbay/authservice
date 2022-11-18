@@ -24,7 +24,7 @@ var (
 	vaultLongTTL      = flag.String("vault_long_ttl", "2160h", "Validity duration of long signed artifacts from Vault")
 	vaultRenew        = flag.String("vault_renew", "24h", "How often to renew the token")
 	vaultGroupMap     = flag.String("vault_group_map", "{}", "JSON group map from LDAP group DN to policy")
-	vaultVmwareDomain = flag.String("vault_vmware_domain", "tech.dreamhack.se", "VMware uses AD UPNs in the format of ${user}@{$domain}, this is the domain part")
+	vaultVmwareDomain = flag.String("vault_vmware_domain", "vmware.example.com", "VMware uses AD UPNs in the format of ${user}@{$domain}, this is the domain part")
 	// This is needed because Vault includes full CA chain *except* the root CA
 	vaultRootCA        = flag.String("vault_include_root_ca", "ca-pki/cert/ca", "Include this certificate in the CA chain")
 	extraSSHPrincipals = flag.String("extra_ssh_principals", "", "Comma separated list of principals added to the ssh certificate")
