@@ -64,7 +64,6 @@ func (s *webuiServer) renderLogin(sess *loginSession, w http.ResponseWriter, r *
 }
 
 func (s *webuiServer) handleJWT(sess *loginSession, w http.ResponseWriter, r *http.Request) {
-	w.Header().Add("content-type", "text/plain")
 
 	tokens := r.Header[*jwt_header]
 	if len(tokens) != 1 {
