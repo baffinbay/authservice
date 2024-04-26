@@ -1,6 +1,6 @@
 module github.com/baffinbay/authservice
 
-go 1.22
+go 1.22.2
 
 require (
 	github.com/MicahParks/keyfunc v1.9.0
