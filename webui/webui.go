@@ -192,7 +192,10 @@ func (s *webuiServer) Serve(l net.Listener) {
 	m.HandleFunc("/complete", s.withSession(s.handleComplete))
 	m.HandleFunc("/error", s.handleError)
 	http.Serve(l, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		log.Printf("HTTP: %s %s", r.Method, r.URL)
+		url := r.URL
+		escapedUrl := strings.ReplaceAll(url, "\n", "")
+		escapedUrl = strings.ReplaceAll(escapedUrl, "\r", "")
+		log.Printf("HTTP: %s %s", r.Method, escapedUrl)
 		m.ServeHTTP(w, r)
 	}))
 }

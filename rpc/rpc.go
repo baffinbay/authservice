@@ -48,7 +48,7 @@ func (s *authServer) RequestUserCredential(
 
 	res, err := s.verifier.VerifyAndSign(r, aq, &user)
 	if err != nil {
-		log.Printf("User failed validation: %v", err)
+		log.Printf("User failed validation: %v", &user)
 		return err
 	}
 	stream.Send(res)
