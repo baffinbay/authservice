@@ -9,10 +9,22 @@ import (
 )
 
 var (
-	//jwtCAFile   = flag.String("jwt_ca_file", "", "JWT CA to trust for JWT authentication")
-	jwksURL     = flag.String("jwks_url", "", "JWKS url for downloading JWT CA eg. https://domain.com/.well-known/some-provider/jwks.json")
-	jwtAudience = flag.String("jwt_audience", "", "jwt audience to be verified eg. authservice.domain.com")
-	jwtIssuer   = flag.String("jwt_issuer", "", "jwt issuer to be verified eg. authenticate.domain.com")
+	// jwtCAFile   = flag.String("jwt_ca_file", "", "JWT CA to trust for JWT authentication")
+	jwksURL = flag.String(
+		"jwks_url",
+		"",
+		"JWKS url for downloading JWT CA eg. https://domain.com/.well-known/some-provider/jwks.json",
+	)
+	jwtAudience = flag.String(
+		"jwt_audience",
+		"",
+		"jwt audience to be verified eg. authservice.domain.com",
+	)
+	jwtIssuer = flag.String(
+		"jwt_issuer",
+		"",
+		"jwt issuer to be verified eg. authenticate.domain.com",
+	)
 )
 
 type jwtVerification string

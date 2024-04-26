@@ -10,8 +10,10 @@ import (
 	pb "github.com/baffinbay/proto/auth"
 )
 
-var (
-	verifyTimeout = flag.String("verify_timeout", "10m", "Seconds before a verify attempt times out.")
+var verifyTimeout = flag.String(
+	"verify_timeout",
+	"10m",
+	"Seconds before a verify attempt times out.",
 )
 
 type Session interface {
@@ -68,7 +70,11 @@ func waitForAttempt(atq chan auth.Attempt) (auth.Attempt, error) {
 	}
 }
 
-func (v *verifier) VerifyAndSign(r *pb.UserCredentialRequest, aq chan *pb.UserAction, user *pb.VerifiedUser) (*pb.CredentialResponse, error) {
+func (v *verifier) VerifyAndSign(
+	r *pb.UserCredentialRequest,
+	aq chan *pb.UserAction,
+	user *pb.VerifiedUser,
+) (*pb.CredentialResponse, error) {
 	// Challenge the user to visit our login web page where we will talk to the
 	// local prodaccess running on the user's computer to try to verify that
 	// the user has not been tricked to follow some other person's link.

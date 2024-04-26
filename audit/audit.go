@@ -12,8 +12,7 @@ var (
 	auditHost     = flag.String("audit_host", "", "Host:port to send the audit logs to")
 )
 
-type auditor struct {
-}
+type auditor struct{}
 
 func (a *auditor) Log(msg string) {
 	log.Printf("Audit: %s", msg)

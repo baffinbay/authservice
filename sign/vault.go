@@ -19,15 +19,43 @@ import (
 )
 
 var (
-	vaultSSHMount     = flag.String("vault_ssh_mount", "ssh", "Mount point for the SSH signer in Vault")
-	vaultTTL          = flag.String("vault_ttl", "20h", "Validity duration of short signed artifacts from Vault")
-	vaultLongTTL      = flag.String("vault_long_ttl", "2160h", "Validity duration of long signed artifacts from Vault")
-	vaultRenew        = flag.String("vault_renew", "24h", "How often to renew the token")
-	vaultGroupMap     = flag.String("vault_group_map", "{}", "JSON group map from LDAP group DN to policy")
-	vaultVmwareDomain = flag.String("vault_vmware_domain", "vmware.example.com", "VMware uses AD UPNs in the format of ${user}@{$domain}, this is the domain part")
+	vaultSSHMount = flag.String(
+		"vault_ssh_mount",
+		"ssh",
+		"Mount point for the SSH signer in Vault",
+	)
+	vaultTTL = flag.String(
+		"vault_ttl",
+		"20h",
+		"Validity duration of short signed artifacts from Vault",
+	)
+	vaultLongTTL = flag.String(
+		"vault_long_ttl",
+		"2160h",
+		"Validity duration of long signed artifacts from Vault",
+	)
+	vaultRenew    = flag.String("vault_renew", "24h", "How often to renew the token")
+	vaultGroupMap = flag.String(
+		"vault_group_map",
+		"{}",
+		"JSON group map from LDAP group DN to policy",
+	)
+	vaultVmwareDomain = flag.String(
+		"vault_vmware_domain",
+		"vmware.example.com",
+		"VMware uses AD UPNs in the format of ${user}@{$domain}, this is the domain part",
+	)
 	// This is needed because Vault includes full CA chain *except* the root CA
-	vaultRootCA        = flag.String("vault_include_root_ca", "ca-pki/cert/ca", "Include this certificate in the CA chain")
-	extraSSHPrincipals = flag.String("extra_ssh_principals", "", "Comma separated list of principals added to the ssh certificate")
+	vaultRootCA = flag.String(
+		"vault_include_root_ca",
+		"ca-pki/cert/ca",
+		"Include this certificate in the CA chain",
+	)
+	extraSSHPrincipals = flag.String(
+		"extra_ssh_principals",
+		"",
+		"Comma separated list of principals added to the ssh certificate",
+	)
 )
 
 func toStringArray(elems interface{}) []string {
@@ -90,7 +118,11 @@ func getPrincipals(username string) string {
 	return strings.Join(principals, ", ")
 }
 
-func (s *signer) signSSH(r *pb.UserCredentialRequest, u *pb.VerifiedUser, res *pb.CredentialResponse) (string, error) {
+func (s *signer) signSSH(
+	r *pb.UserCredentialRequest,
+	u *pb.VerifiedUser,
+	res *pb.CredentialResponse,
+) (string, error) {
 	username := trimEmail(u.Username)
 	kd := map[string]interface{}{
 		"public_key":       r.SshCertificateRequest.PublicKey,
@@ -109,7 +141,11 @@ func (s *signer) signSSH(r *pb.UserCredentialRequest, u *pb.VerifiedUser, res *p
 	return "SSH certificate", nil
 }
 
-func (s *signer) signVault(r *pb.UserCredentialRequest, u *pb.VerifiedUser, res *pb.CredentialResponse) (string, error) {
+func (s *signer) signVault(
+	r *pb.UserCredentialRequest,
+	u *pb.VerifiedUser,
+	res *pb.CredentialResponse,
+) (string, error) {
 	policies := make([]string, 0)
 	for _, group := range u.Group {
 		p, ok := s.gmap[group]
@@ -136,7 +172,11 @@ func (s *signer) signVault(r *pb.UserCredentialRequest, u *pb.VerifiedUser, res 
 	return "Vault token", nil
 }
 
-func (s *signer) signBrowser(r *pb.UserCredentialRequest, u *pb.VerifiedUser, res *pb.CredentialResponse) (string, error) {
+func (s *signer) signBrowser(
+	r *pb.UserCredentialRequest,
+	u *pb.VerifiedUser,
+	res *pb.CredentialResponse,
+) (string, error) {
 	data := map[string]interface{}{
 		"csr":         string(r.BrowserCertificateRequest.Csr),
 		"ttl":         *vaultLongTTL,
@@ -155,7 +195,11 @@ func (s *signer) signBrowser(r *pb.UserCredentialRequest, u *pb.VerifiedUser, re
 	return "Browser certificate", nil
 }
 
-func (s *signer) signVmware(r *pb.UserCredentialRequest, u *pb.VerifiedUser, res *pb.CredentialResponse) (string, error) {
+func (s *signer) signVmware(
+	r *pb.UserCredentialRequest,
+	u *pb.VerifiedUser,
+	res *pb.CredentialResponse,
+) (string, error) {
 	data := map[string]interface{}{
 		"csr":         string(r.VmwareCertificateRequest.Csr),
 		"ttl":         *vaultTTL,
@@ -175,7 +219,11 @@ func (s *signer) signVmware(r *pb.UserCredentialRequest, u *pb.VerifiedUser, res
 	return "VMware certificate", nil
 }
 
-func (s *signer) signKubernetes(r *pb.UserCredentialRequest, u *pb.VerifiedUser, res *pb.CredentialResponse) (string, error) {
+func (s *signer) signKubernetes(
+	r *pb.UserCredentialRequest,
+	u *pb.VerifiedUser,
+	res *pb.CredentialResponse,
+) (string, error) {
 	// TODO(bluecmd): Due to https://github.com/hashicorp/vault/issues/4562 we
 	// are forced to create our own CSR here and give the key back to the user.
 	keyb, err := ecdsa.GenerateKey(elliptic.P521(), rand.Reader)

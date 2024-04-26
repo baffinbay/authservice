@@ -17,8 +17,7 @@ func (v *fakeVerification) Groups() []string {
 	return v.groups
 }
 
-type fakeAuth struct {
-}
+type fakeAuth struct{}
 
 func (l *fakeAuth) Challenge() ChallengeType {
 	return ChallengeUsernamePassword

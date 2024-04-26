@@ -11,14 +11,21 @@ import (
 )
 
 type Verifier interface {
-	VerifyAndSign(*pb.UserCredentialRequest, chan *pb.UserAction, *pb.VerifiedUser) (*pb.CredentialResponse, error)
+	VerifyAndSign(
+		*pb.UserCredentialRequest,
+		chan *pb.UserAction,
+		*pb.VerifiedUser,
+	) (*pb.CredentialResponse, error)
 }
 
 type authServer struct {
 	verifier Verifier
 }
 
-func (s *authServer) RequestUserCredential(r *pb.UserCredentialRequest, stream pb.AuthenticationService_RequestUserCredentialServer) error {
+func (s *authServer) RequestUserCredential(
+	r *pb.UserCredentialRequest,
+	stream pb.AuthenticationService_RequestUserCredentialServer,
+) error {
 	log.Printf("Handling request %v", *r)
 	aq := make(chan *pb.UserAction, 1)
 	go func() {

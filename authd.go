@@ -5,13 +5,14 @@ import (
 	"log"
 	"net"
 
+	"github.com/soheilhy/cmux"
+
 	"github.com/baffinbay/authservice/audit"
 	"github.com/baffinbay/authservice/auth"
 	"github.com/baffinbay/authservice/rpc"
 	"github.com/baffinbay/authservice/sign"
 	"github.com/baffinbay/authservice/verify"
 	"github.com/baffinbay/authservice/webui"
-	"github.com/soheilhy/cmux"
 )
 
 var (
@@ -28,7 +29,9 @@ func main() {
 	}
 
 	mux := cmux.New(s)
-	sg := mux.MatchWithWriters(cmux.HTTP2MatchHeaderFieldSendSettings("content-type", "application/grpc"))
+	sg := mux.MatchWithWriters(
+		cmux.HTTP2MatchHeaderFieldSendSettings("content-type", "application/grpc"),
+	)
 	sh := mux.Match(cmux.Any())
 
 	a := audit.New()

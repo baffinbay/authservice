@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"log"
 
-	pb "github.com/baffinbay/proto/auth"
 	"github.com/baffinbay/authservice/auth"
 	"github.com/baffinbay/authservice/verify"
+	pb "github.com/baffinbay/proto/auth"
 	"github.com/google/uuid"
 )
 
@@ -43,7 +43,11 @@ func (a *attempt) Credential() string {
 	return a.credential
 }
 
-func (s *webuiServer) NewSession(r *pb.UserCredentialRequest, atq chan auth.Attempt, eq chan error) verify.Session {
+func (s *webuiServer) NewSession(
+	r *pb.UserCredentialRequest,
+	atq chan auth.Attempt,
+	eq chan error,
+) verify.Session {
 	id := uuid.New().String()
 	rq := make(chan string, 0)
 	sess := &loginSession{
@@ -92,7 +96,6 @@ func (s *loginSession) sendAttempt(a *attempt) error {
 	default:
 		return fmt.Errorf("Session is gone")
 	}
-
 }
 
 func (s *loginSession) ProcessLogin(username string, password string) error {

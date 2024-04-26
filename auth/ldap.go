@@ -10,15 +10,30 @@ import (
 )
 
 var (
-	ldapServer     = flag.String("ldap_server", "ldap.change.the.flag:0", "What LDAP server and port to use")
-	ldapTLS        = flag.Bool("ldap_tls", true, "Whether or not to use TLS to connect to LDAP")
-	ldapBind       = flag.String("ldap_bind", "uid=%s,dc=dummy", "DN format to use when binding with a login attempt")
-	ldapServerName = flag.String("ldap_server_name", "", "Override LDAP server name used for TLS verification")
-	ldapBase       = flag.String("ldap_base", "dc=dummy", "What LDAP base to use for the group search")
+	ldapServer = flag.String(
+		"ldap_server",
+		"ldap.change.the.flag:0",
+		"What LDAP server and port to use",
+	)
+	ldapTLS  = flag.Bool("ldap_tls", true, "Whether or not to use TLS to connect to LDAP")
+	ldapBind = flag.String(
+		"ldap_bind",
+		"uid=%s,dc=dummy",
+		"DN format to use when binding with a login attempt",
+	)
+	ldapServerName = flag.String(
+		"ldap_server_name",
+		"",
+		"Override LDAP server name used for TLS verification",
+	)
+	ldapBase = flag.String(
+		"ldap_base",
+		"dc=dummy",
+		"What LDAP base to use for the group search",
+	)
 )
 
-type ldapAuth struct {
-}
+type ldapAuth struct{}
 
 type ldapVerification struct {
 	username string
@@ -61,7 +76,6 @@ func (l *ldapAuth) Verify(a Attempt) (Verification, error) {
 }
 
 func (l *ldapAuth) resolve(dn string, c *ldap.Conn) ([]string, error) {
-
 	// Login succeeded, get groups.
 	// We're using RFC2307bis, so doing a search for our DN should be easy enough.
 	sreq := ldap.NewSearchRequest(

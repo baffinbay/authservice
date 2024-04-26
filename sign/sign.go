@@ -18,7 +18,10 @@ type signer struct {
 	gmap map[string]string
 }
 
-func (s *signer) Sign(r *pb.UserCredentialRequest, u *pb.VerifiedUser) (*pb.CredentialResponse, error) {
+func (s *signer) Sign(
+	r *pb.UserCredentialRequest,
+	u *pb.VerifiedUser,
+) (*pb.CredentialResponse, error) {
 	res := &pb.CredentialResponse{}
 
 	// TODO(bluecmd): Refactor this

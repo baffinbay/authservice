@@ -11,8 +11,16 @@ import (
 )
 
 var (
-	secureCookie = flag.Bool("secure_cookie", true, "Whether or not to mark the session cookie for only HTTPS use")
-	jwt_header   = flag.String("jwt_header", "X-Jwt-Assertion", "Header that should contain the jwt")
+	secureCookie = flag.Bool(
+		"secure_cookie",
+		true,
+		"Whether or not to mark the session cookie for only HTTPS use",
+	)
+	jwt_header = flag.String(
+		"jwt_header",
+		"X-Jwt-Assertion",
+		"Header that should contain the jwt",
+	)
 )
 
 type webuiServer struct {
@@ -51,7 +59,10 @@ func (s *webuiServer) processLogin(sess *loginSession, w http.ResponseWriter, r 
 		http.Error(w, err.Error(), http.StatusUnauthorized)
 		return
 	}
-	log.Printf("User %v login challenge successful", username[0])
+	username := username[0]
+	escapedUsername := strings.ReplaceAll(username, "\n", "")
+	escapedUsername = strings.ReplaceAll(escapedUsername, "\r", "")
+	log.Printf("User %v login challenge successful", escapedUsername)
 }
 
 func (s *webuiServer) renderLogin(sess *loginSession, w http.ResponseWriter, r *http.Request) {
@@ -129,7 +140,9 @@ func (s *webuiServer) handleError(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (s *webuiServer) withSession(rh func(*loginSession, http.ResponseWriter, *http.Request)) func(http.ResponseWriter, *http.Request) {
+func (s *webuiServer) withSession(
+	rh func(*loginSession, http.ResponseWriter, *http.Request),
+) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		sid, ok := r.URL.Query()["session"]
 		if !ok {
@@ -151,7 +164,9 @@ func (s *webuiServer) withSession(rh func(*loginSession, http.ResponseWriter, *h
 		if err != nil {
 			secret, err := session.Cookie()
 			if err != nil {
-				log.Printf("Tried to set cookie twice, probably something bad going on - rejecting request")
+				log.Printf(
+					"Tried to set cookie twice, probably something bad going on - rejecting request",
+				)
 				http.Error(w, "No session cookie", http.StatusBadRequest)
 				return
 			}
@@ -184,10 +199,18 @@ func (s *webuiServer) Serve(l net.Listener) {
 
 func New() *webuiServer {
 	s := new(webuiServer)
-	s.completeTmpl = template.Must(template.ParseFiles("tmpl/site.tmpl", "tmpl/no-validate.tmpl", "tmpl/complete.tmpl"))
-	s.loginTmpl = template.Must(template.ParseFiles("tmpl/site.tmpl", "tmpl/validate.tmpl", "tmpl/login.tmpl"))
-	s.reviewTmpl = template.Must(template.ParseFiles("tmpl/site.tmpl", "tmpl/validate.tmpl", "tmpl/review.tmpl"))
-	s.errorTmpl = template.Must(template.ParseFiles("tmpl/site.tmpl", "tmpl/no-validate.tmpl", "tmpl/error.tmpl"))
+	s.completeTmpl = template.Must(
+		template.ParseFiles("tmpl/site.tmpl", "tmpl/no-validate.tmpl", "tmpl/complete.tmpl"),
+	)
+	s.loginTmpl = template.Must(
+		template.ParseFiles("tmpl/site.tmpl", "tmpl/validate.tmpl", "tmpl/login.tmpl"),
+	)
+	s.reviewTmpl = template.Must(
+		template.ParseFiles("tmpl/site.tmpl", "tmpl/validate.tmpl", "tmpl/review.tmpl"),
+	)
+	s.errorTmpl = template.Must(
+		template.ParseFiles("tmpl/site.tmpl", "tmpl/no-validate.tmpl", "tmpl/error.tmpl"),
+	)
 	s.sessions = make(map[string]*loginSession)
 	s.sessionLock = &sync.Mutex{}
 	return s
