@@ -1,12 +1,12 @@
 module github.com/baffinbay/authservice
 
 go 1.22.2
-toolchain go1.23.7
+toolchain go1.24.1
 
 require (
 	github.com/MicahParks/keyfunc v1.9.0
 	github.com/baffinbay/proto v0.0.0-20210914144723-74914933cf7f
-	github.com/golang-jwt/jwt/v4 v4.5.1
+	github.com/golang-jwt/jwt/v4 v4.5.2
 	github.com/google/uuid v1.6.0
 	github.com/hashicorp/vault/api v1.12.0
 	github.com/soheilhy/cmux v0.1.5
